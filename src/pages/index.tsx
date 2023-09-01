@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { gql } from "@apollo/client";
-import { GetServerSideProps } from "next";
+import { GetStaticProps } from "next";
 import client from "~/utils/apollo-client";
 
 export default function Home({ posts }: { posts: any[] }) {
@@ -64,7 +64,7 @@ export default function Home({ posts }: { posts: any[] }) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const getLast10PostsQuery = gql`
     query {
       posts(last: 10) {
@@ -78,11 +78,16 @@ export const getServerSideProps: GetServerSideProps = async () => {
     }
   `;
 
-  const { data } = await client.query({
-    query: getLast10PostsQuery,
-  });
+  let posts: any[] = [];
+  try {
+    const { data } = await client.query({
+      query: getLast10PostsQuery,
+    });
 
-  const posts: any[] = data.posts.nodes;
+    posts = data.posts.nodes;
+  } catch (error) {
+    posts = [];
+  }
 
   return { props: { posts } };
 };
